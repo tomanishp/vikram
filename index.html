@@ -222,7 +222,9 @@ function gregorianToVS(date) {
     paksha
   };
 }
-
+function pakshaDay(tithi) {
+  return tithi <= 15 ? tithi : tithi - 15;
+}
 function vsToGregorian(vy, vm, vd) {
   let approxYear = vy - 57;
   let date = new Date(approxYear, vm - 1, vd);
@@ -239,10 +241,13 @@ function vsToGregorian(vy, vm, vd) {
 function convertG2V() {
   let d = new Date(g2v_date.value);
   let v = gregorianToVS(d);
+
   g2v_out.innerHTML =
-    `VS ${v.year}, ${v.month}${v.adhik ? " (Adhik)" : ""}, ${v.paksha} ${v.tithi}`;
+    `VS ${v.year}, ${v.month}${v.adhik ? " (Adhik)" : ""}<br>` +
+    `${v.paksha} Paksha – Day ${pakshaDay(v.tithi)}`;
 }
 
+  
 function convertV2G() {
   let g = vsToGregorian(+vs_year.value, +vs_month.value, +vs_day.value);
   v2g_out.innerHTML = g ? g.toDateString() : "Date not found";
