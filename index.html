@@ -153,15 +153,22 @@ const vsMonths = [
 ];
 
 function jd(date) {
-  return Astronomy.MakeTime(date).ut + IST_OFFSET;
+  const t = Astronomy.MakeTime(date);
+  return t.ut + IST_OFFSET;
 }
-
+  
 function sunLon(jd) {
-  return Astronomy.EclipticLongitude(Astronomy.Body.Sun, jd);
+  const time = Astronomy.MakeTime(new Date(jd * 86400000));
+  const eq = Astronomy.Equator(Astronomy.Body.Sun, time, null, true, false);
+  const ecl = Astronomy.Ecliptic(eq);
+  return ecl.elon;
 }
 
 function moonLon(jd) {
-  return Astronomy.EclipticLongitude(Astronomy.Body.Moon, jd);
+  const time = Astronomy.MakeTime(new Date(jd * 86400000));
+  const eq = Astronomy.Equator(Astronomy.Body.Moon, time, null, true, false);
+  const ecl = Astronomy.Ecliptic(eq);
+  return ecl.elon;
 }
 
 function tithi(jd) {
