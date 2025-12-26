@@ -156,15 +156,27 @@ function jd(date) {
   const t = Astronomy.MakeTime(date);
   return t.ut + IST_OFFSET;
 }
-  
+
 function sunLon(jd) {
+  const time = Astronomy.MakeTime(new Date(jd * 86400000));
+  const vec = Astronomy.GeoVector(Astronomy.Body.Sun, time, false);
+  return Astronomy.Ecliptic(vec).elon;
+}
+
+function moonLon(jd) {
+  const time = Astronomy.MakeTime(new Date(jd * 86400000));
+  const vec = Astronomy.GeoVector(Astronomy.Body.Moon, time, false);
+  return Astronomy.Ecliptic(vec).elon;
+}
+
+function sunLon1(jd) {
   const time = Astronomy.MakeTime(new Date(jd * 86400000));
   const eq = Astronomy.Equator(Astronomy.Body.Sun, time, null, true, false);
   const ecl = Astronomy.Ecliptic(eq);
   return ecl.elon;
 }
 
-function moonLon(jd) {
+function moonLon2(jd) {
   const time = Astronomy.MakeTime(new Date(jd * 86400000));
   const eq = Astronomy.Equator(Astronomy.Body.Moon, time, null, true, false);
   const ecl = Astronomy.Ecliptic(eq);
