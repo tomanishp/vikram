@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Vikram Samvat Converter (Accurate)</title>
+
+<script src="https://cdn.jsdelivr.net/npm/astronomy-engine@2.1.19/astronomy.min.js"></script>
+
+<style>
+body { font-family: Arial; padding: 20px }
+input, button { margin: 5px }
+.section { border: 1px solid #ccc; padding: 15px; margin-bottom: 20px }
+</style>
+</head>
+
+<body>
+
+<h2>Accurate Vikram Samvat Converter</h2>
+
+<div class="section">
+<h3>Gregorian → Vikram Samvat</h3>
+<input type="date" id="g2v_date">
+<button onclick="convertG2V()">Convert</button>
+<div id="g2v_out"></div>
+</div>
+
+<div class="section">
+<h3>Vikram Samvat → Gregorian</h3>
+VS Year <input id="vs_year">
+VS Month (1-12) <input id="vs_month">
+VS Day <input id="vs_day">
+<button onclick="convertV2G()">Convert</button>
+<div id="v2g_out"></div>
+</div>
+
+<div class="section">
+<h3>Days Between Two Vikram Samvat Dates</h3>
+<h4>Date 1</h4>
+Y <input id="d1y"> M <input id="d1m"> D <input id="d1d"><br>
+<h4>Date 2</h4>
+Y <input id="d2y"> M <input id="d2m"> D <input id="d2d"><br>
+<button onclick="daysBetweenVS()">Calculate</button>
+<div id="days_out"></div>
+</div>
+
+<script>
+const IST_OFFSET = 5.5 / 24;
+const vsMonths = [
+  "Chaitra","Vaishakha","Jyeshtha","Ashadha",
+  "Shravana","Bhadrapada","Ashwin","Kartika",
+  "Margashirsha","Pausha","Magha","Phalguna"
+];
+
+function jd(date) {
+  return Astronomy.MakeTime(date).ut + IST_OFFSET;
+}
+
+function sunLon(jd) {
+  return Astronomy.EclipticLongitude(Astronomy.Body.Sun, jd);
+}
+
+function moonLon(jd) {
+  return Astronomy.EclipticLongitude(Astronomy.Body.Moon, jd);
+}
+
+function tithi(jd) {
+  return Math.floor(((moonLon(jd) - sunLon(jd) + 360) % 360) / 12) + 1;
+}
+
+function sankranti(jd1, jd2) {
+  return Math.floor(sunLon(jd1)/30) !== Math.floor(sunLon(jd2)/30);
+}
+
+function isAdhikMonth(jdStart) {
+  let sank = false;
+  for (let i=0;i<30;i++) {
+    if (sankranti(jdStart+i, jdStart+i+1)) {
+      sank = true;
+      break;
+    }
+  }
+  return !sank;
+}
+
+function gregorianToVS(date) {
+  let j = jd(date);
+  let t = tithi(j);
+  let paksha = t <= 15 ? "Shukla" : "Krishna";
+
+  let purnimaJD = j;
+  while (tithi(purnimaJD) !== 15) purnimaJD--;
+
+  let monthIndex = Math.floor(sunLon(purnimaJD)/30);
+  let adhik = isAdhikMonth(purnimaJD - 15);
+
+  let vsYear = date.getMonth() >= 3 ? date.getFullYear() + 57 : date.getFullYear() + 56;
+
+  return {
+    year: vsYear,
+    month: vsMonths[monthIndex],
+    monthIndex: monthIndex + 1,
+    adhik,
+    tithi: t,
+    paksha
+  };
+}
+
+function vsToGregorian(vy, vm, vd) {
+  let approxYear = vy - 57;
+  let date = new Date(approxYear, vm-1, vd);
+
+  for (let i=0;i<370;i++) {
+    let g = gregorianToVS(date);
+    if (g.year===vy && g.monthIndex===vm && g.tithi===vd)
+      return date;
+    date.setDate(date.getDate()+1);
+  }
+  return null;
+}
+
+function convertG2V() {
+  let d = new Date(document.getElementById("g2v_date").value);
+  let v = gregorianToVS(d);
+  document.getElementById("g2v_out").innerHTML =
+    `VS ${v.year}, ${v.month}${v.adhik?" (Adhik)":""}, ${v.paksha} ${v.tithi}`;
+}
+
+function convertV2G() {
+  let y = +vs_year.value, m = +vs_month.value, d = +vs_day.value;
+  let g = vsToGregorian(y,m,d);
+  v2g_out.innerHTML = g ? g.toDateString() : "Not found";
+}
+
+function daysBetweenVS() {
+  let d1 = vsToGregorian(+d1y.value,+d1m.value,+d1d.value);
+  let d2 = vsToGregorian(+d2y.value,+d2m.value,+d2d.value);
+  let days = Math.abs((d2-d1)/(1000*60*60*24));
+  days_out.innerHTML = `Days: ${days}`;
+}
+</script>
+
+</body>
+</html>
