@@ -243,8 +243,7 @@ function convertG2V() {
   let v = gregorianToVS(d);
 
   g2v_out.innerHTML =
-    `VS ${v.year}, ${v.month}${v.adhik ? " (Adhik)" : ""}<br>` +
-    `${v.paksha} Paksha – Day ${pakshaDay(v.tithi)}`;
+    `VS ${v.year}, ${v.month}${v.adhik ? " (Adhik)" : ""} ${v.paksha} Paksha – Day ${pakshaDay(v.tithi)}`;
 }
 
   
